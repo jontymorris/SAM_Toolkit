@@ -17,61 +17,85 @@ class Lookup:
         else:
             return result[1:-1]
 
+class Logging:
+    def __init__(self, log_file):
+        self.log_file = log_file
+
+    def save(self, data):
+        # Log into file
+        if self.log_file != "":
+            with open(self.log_file, 'w') as file:
+                file.write(json.dumps(data, indent=4, sort_keys=False))
+
+class Main:
+    def __init__(self):
+        self.data = {}
+        self.lookup = Lookup()
+        self.logging = Logging("result_" + str(time.time()) + ".txt")
+
+    ''' Query File '''
+    def file(self, file_name, log=True):
+        with open(file_name) as f:
+            print("Now searching...")
+            for email in f:
+                email = email.replace("\n", "").replace(" ", "")
+                if email != "":
+                    result = self.lookup.query_database(email)
+                    if result:
+                        self.append(result)
+                        if log:
+                            self.logging.save(self.data)                
+        print("Done!")
+
+    ''' One Query '''
+    def indivdual_query(self, query):
+        data = self.lookup.query_database(query)
+        if data: print("Password Found/s: ", data)
+        else: print("No passwords found.")
+
+    ''' Split up Username and Password '''
+    def split_text(self, text):
+        for split in [':', ';']:
+            item_split = text.split(split)
+            if len(item_split) > 1
+                return item_split
+        print("Splitting Error: couldn't split username from password")
+        return False
+
+    ''' Add result to dictionary '''
+    def append(self, result):
+        for item in result:
+            split = self.split_text(item)
+            if split:
+                e = split[0]; p = split[1]
+                print(e + ":" + p)
+                # Existing scanned email
+                if e in self.data:
+                    if p not in self.data[e]:
+                        self.data[e].append(p)
+                # Add new email
+                else:
+                    self.data[e] = [p]
+
+
 if __name__ == "__main__":
     argument_help = "Bad Argument:\n\t- Syntax: python " + sys.argv[0] + " [email/username OR file] [-log (optional - saves to file)]"
-    data = {}
-    log_file = ""
-
+    
     if len(sys.argv) > 1:
-        lookup = Lookup()
-
-        # File
+        main = Main()
+        
+        # Query each line of file
         if os.path.isfile(sys.argv[1]):
             # Enable file logging
             if len(sys.argv) > 2:
                 if sys.argv[2] == "-log":
-                    log_file = "result_" + str(time.time()) + ".txt"
+                    main.file(sys.argv)
+            main.file(sys.argv[1], log=False)
 
-            # Run file
-            with open(sys.argv[1]) as f:
-                print("Now searching...")
-                for email in f:
-                    email = email.replace("\n", "").replace(" ", "")
-                    if email != "":
-                        result = lookup.query_database(email)
-                        if result:
-                            for item in result:
-                                # Split username and password
-                                split_success = False
-                                for split in [':', ';']:
-                                    item_split = item.split(split)
-                                    if len(item_split) > 1:
-                                        split_success = True
-                                        break
-                                if split_success:
-                                    e = item_split[0]; p = item_split[1]
-                                    print(e + ":" + p)
-                                    # Existing scanned email
-                                    if e in data:
-                                        if p not in data[e]:
-                                            data[e].append(p)
-                                    # Add new email
-                                    else:
-                                        data[e] = [p]
-                                else:
-                                    print("Splitting Error: couldn't split username from password")
-                            
-                            # Log into file
-                            if log_file != "":
-                                with open(log_file, 'w') as file:
-                                    file.write(json.dumps(data, indent=4, sort_keys=False))
-            print("Done!")
-        
-        # Individual Query                            
+        # Individual Query
         else:
-            data = lookup.query_database(sys.argv[1])
-            if data: print("Password Found/s: ", data)
-            else: print("No passwords found.")
+            print(sys.argv[1])
+            main.indivdual_query(sys.argv[1])
 
     else: 
         print(argument_help) # Invalid Arguments
