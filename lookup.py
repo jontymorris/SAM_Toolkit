@@ -57,7 +57,7 @@ class Main:
     def split_text(self, text):
         for split in [':', ';']:
             item_split = text.split(split)
-            if len(item_split) > 1
+            if len(item_split) > 1:
                 return item_split
         print("Splitting Error: couldn't split username from password")
         return False
