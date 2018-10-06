@@ -1,7 +1,7 @@
 import os, sys, requests, time, json
 
 class Lookup:
-    ''' Helper class for quering the ghostproject database '''
+    ''' Helper class for querying the ghostproject database '''
     def __init__(self):
         self.user_agent = {'User-Agent': 'Email_Checker'}
         self.url  = "https://ghostproject.fr/search.php"
